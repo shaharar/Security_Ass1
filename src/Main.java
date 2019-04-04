@@ -4,12 +4,13 @@ import java.io.InputStreamReader;
 
 public class Main {
 
+
     public static void main (String[] args){
 
         Encrypter enc;
         Decrypter dec;
         EncryptionBreaker breaker;
-        Parser p = new Parser();
+/*        Parser p = new Parser();
 
         //read commands from cmd
         String command = "";
@@ -21,21 +22,25 @@ public class Main {
         }
 
         String[] res;
-        res = p.parse(command);
+        res = p.parse(command);*/
    //     res = p.parse("Java –jar aes.jar –e –k key.txt –i message.txt –o cypther.txt");
 
-        switch (res[3]){
-            case "e":
+        switch (args[0]){
+            case "-e":
                 enc = new Encrypter();
-                enc.encrypt(res[0],res[1],res[2]);
+                try {
+                    enc.encrypt(args[2],args[4],args[6]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
-            case "d":
+            case "-d":
                 dec = new Decrypter();
-                dec.decrypt(res[0],res[1],res[2]);
+                dec.decrypt(args[2],args[4],args[6]);
                 break;
-            case "b":
+            case "-b":
                 breaker = new EncryptionBreaker();
-                breaker.encBreak(res[0],res[1],res[2]);
+                breaker.encBreak(args[2],args[4],args[6]);
                 break;
         }
     }

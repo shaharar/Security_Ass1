@@ -28,7 +28,6 @@ public class Encrypter {
                    k1[row][col] = key[idx];
                 }
             }
-
         }
 
         //initialize k2
@@ -38,7 +37,6 @@ public class Encrypter {
                     k2[row][col] = key[idx];
                 }
             }
-
         }
 
         //initialize k3
@@ -58,7 +56,7 @@ public class Encrypter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int index = 0, idx = 0;
+        int index = 0, idx;
         while (index < message.length){
             for (idx = index; idx < index + 16; idx++){
                 for(int row = 0; row < 4; row++){
@@ -111,15 +109,15 @@ public class Encrypter {
 
     private void writeToFile(byte[][] msgBlock, String path) throws IOException {
 
-        FileOutputStream fout = null;
+        FileOutputStream out = null;
         try {
-            fout = new FileOutputStream(path);
+            out = new FileOutputStream(path);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         for(int row = 0; row < 4; row++){
-                fout.write(msgBlock[row]);
+            out.write(msgBlock[row]);
         }
-        fout.close();
+        out.close();
     }
 }

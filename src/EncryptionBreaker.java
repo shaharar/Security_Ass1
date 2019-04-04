@@ -54,18 +54,18 @@ public class EncryptionBreaker {
 
     private void shiftRows(byte[][] msgBlock) {
         for(int row = 1; row < 4; row++){
-            shiftRight(msgBlock, row);
+            shiftLeft(msgBlock, row);
         }
     }
 
-    private void shiftRight(byte[][] msgBlock, int row) {
+    private void shiftLeft(byte[][] msgBlock, int row) {
         int counter = 0;
         while (counter < row){
-            byte rightCell = msgBlock[row][3];
-            for(int col = 2; col > 0; col--){
-                msgBlock[row][col+1] = msgBlock[row][col];
+            byte leftCell = msgBlock[row][0];
+            for(int col = 1; col < 4; col++){
+                msgBlock[row][col-1] = msgBlock[row][col];
             }
-            msgBlock[row][0] = rightCell;
+            msgBlock[row][3] = leftCell;
             counter++;
         }
     }
@@ -81,15 +81,15 @@ public class EncryptionBreaker {
 
     private void writeToFile(byte[][] msgBlock, String path) throws IOException {
 
-        FileOutputStream fout = null;
+        FileOutputStream out = null;
         try {
-            fout = new FileOutputStream(path);
+            out = new FileOutputStream(path);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         for(int row = 0; row < 4; row++){
-            fout.write(msgBlock[row]);
+            out.write(msgBlock[row]);
         }
-        fout.close();
+        out.close();
     }
 }

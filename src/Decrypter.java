@@ -7,13 +7,19 @@ import java.nio.file.Paths;
 
 public class Decrypter {
 
-    public void decrypt(String path1, String path2, String path3) throws IOException {
+    byte[] key, cipher;
+    byte[][] cipherBlock, k1, k2, k3;
 
-        byte[] key = null, cipher = null;
-        byte[][] cipherBlock = new byte[4][4];
-        byte[][] k1 = new byte[4][4];
-        byte[][] k2 = new byte[4][4];
-        byte[][] k3 = new byte[4][4];
+    public Decrypter() {
+        key = null;
+        cipher = null;
+        cipherBlock = new byte[4][4];
+        k1 = new byte[4][4];
+        k2 = new byte[4][4];
+        k3 = new byte[4][4];
+    }
+
+    public void decrypt(String path1, String path2, String path3) throws IOException {
 
         Path path_1 = Paths.get(path1);
         try {
@@ -23,29 +29,29 @@ public class Decrypter {
         }
 
         //initialize k1
-        for (int idx = 0; idx < 16; idx++){
-            for(int row = 0; row < 4; row++){
-                for(int col = 0; col < 4; col++){
-                    k1[row][col] = key[idx];
-                }
+        int idx = 0;
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                k1[row][col] = key[idx];
+                idx++;
             }
         }
 
         //initialize k2
-        for (int idx = 16; idx < 32; idx++){
-            for(int row = 0; row < 4; row++){
-                for(int col = 0; col < 4; col++){
-                    k2[row][col] = key[idx];
-                }
+        idx = 16;
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                k2[row][col] = key[idx];
+                idx++;
             }
         }
 
         //initialize k3
-        for (int idx = 32; idx < 48; idx++){
-            for(int row = 0; row < 4; row++){
-                for(int col = 0; col < 4; col++){
-                    k3[row][col] = key[idx];
-                }
+        idx = 32;
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                k3[row][col] = key[idx];
+                idx++;
             }
         }
 
@@ -55,13 +61,14 @@ public class Decrypter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int index = 0, idx;
+
+        int index = 0, idxC;
         while (index < cipher.length){
-            for (idx = index; idx < index + 16; idx++){
-                for(int row = 0; row < 4; row++){
-                    for(int col = 0; col < 4; col++){
-                        cipherBlock[row][col] = cipher[idx];
-                    }
+            idxC = index;
+            for(int row = 0; row < 4; row++){
+                for(int col = 0; col < 4; col++){
+                    cipherBlock[row][col] = cipher[idxC];
+                    idxC++;
                 }
             }
             index = idx;
@@ -96,7 +103,8 @@ public class Decrypter {
     private void addRoundKey(byte[][] cipherBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                int xorRes = ((int)cipherBlock[row][col])^((int)k[row][col]);
+              //  int xorRes = ((int)cipherBlock[row][col])^((int)k[row][col]);
+                int xorRes = ((int)(cipherBlock[row][col] & 0xff))^((int)(k[row][col]& 0xff));
                 cipherBlock[row][col] = (byte)xorRes;
             }
         }

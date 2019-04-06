@@ -8,15 +8,20 @@ import java.util.Random;
 
 public class EncryptionBreaker {
 
-    public void encBreak(String path1, String path2, String path3) throws IOException {
+    byte[] cipher, message;
+    byte[][] msgBlock, cipherBlock, k1, k2;
 
-        byte[][] msgBlock = new byte[4][4];
-        byte[][] cipherBlock = new byte[4][4];
-        byte[] message = null;
-        byte[] cipher = null;
-        byte[][] k1, k2;
+    public EncryptionBreaker() {
+        message = null;
+        cipher = null;
+        msgBlock = new byte[4][4];
+        cipherBlock = new byte[4][4];
         k1 = new byte[4][4];
         k2 = new byte[4][4];
+    }
+
+    public void encBreak(String path1, String path2, String path3) throws IOException {
+
         Random rnd = new Random();
         for(int row = 0; row < 4; row++){
             rnd.nextBytes(k1[row]);
@@ -34,22 +39,22 @@ public class EncryptionBreaker {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int idx = 0; idx < 16; idx++){
-                for(int row = 0; row < 4; row++){
-                    for(int col = 0; col < 4; col++){
-                        msgBlock[row][col] = message[idx];
-                        cipherBlock[row][col] = cipher[idx];
-                    }
-                }
-
+        int idxM = 0, idxC = 0;
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                msgBlock[row][col] = message[idxM];
+                cipherBlock[row][col] = cipher[idxC];
+                idxM++;
+                idxC++;
             }
-            shiftRows(msgBlock);
-            addRoundKey(msgBlock, k1);
-            shiftRows(msgBlock);
-            addRoundKey(msgBlock, k2);
-            shiftRows(msgBlock);
-            addRoundKey(msgBlock, cipherBlock);
-            writeToFile(msgBlock, path3);
+        }
+        shiftRows(msgBlock);
+        addRoundKey(msgBlock, k1);
+        shiftRows(msgBlock);
+        addRoundKey(msgBlock, k2);
+        shiftRows(msgBlock);
+        addRoundKey(msgBlock, cipherBlock);
+        writeToFile(msgBlock, path3);
     }
 
     private void shiftRows(byte[][] msgBlock) {
@@ -73,7 +78,8 @@ public class EncryptionBreaker {
     private void addRoundKey(byte[][] msgBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                int xorRes = ((int)msgBlock[row][col])^((int)k[row][col]);
+              //  int xorRes = ((int)msgBlock[row][col])^((int)k[row][col]);
+                int xorRes = ((int)(msgBlock[row][col] & 0xff))^((int)(k[row][col]& 0xff));
                 msgBlock[row][col] = (byte)xorRes;
             }
         }

@@ -63,16 +63,14 @@ public class Encrypter {
         }
 
 
-        int index = 0, idxM;
-        while (index < message.length){
-            idxM = index;
+        int idxM = 0;
+        while (idxM < message.length){
             for(int row = 0; row < 4; row++){
                 for(int col = 0; col < 4; col++){
                     msgBlock[row][col] = message[idxM];
                     idxM++;
                 }
             }
-            index = idx;
             shiftRows(msgBlock);
             addRoundKey(msgBlock, k1);
             shiftRows(msgBlock);
@@ -85,6 +83,18 @@ public class Encrypter {
     }
 
     private void shiftRows(byte[][] msgBlock) {
+        int row = 1;
+        while (row < 4){
+            byte leftCell = msgBlock[row][0];
+            for(int col = 1; col < 4; col++){
+                msgBlock[row][col-1] = msgBlock[row][col];
+            }
+            msgBlock[row][3] = leftCell;
+            row++;
+        }
+    }
+
+/*    private void shiftRows(byte[][] msgBlock) {
         for(int row = 1; row < 4; row++){
             shiftLeft(msgBlock, row);
         }
@@ -100,7 +110,7 @@ public class Encrypter {
             msgBlock[row][3] = leftCell;
             counter++;
         }
-    }
+    }*/
 
     private void addRoundKey(byte[][] msgBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){

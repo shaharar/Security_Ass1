@@ -62,16 +62,14 @@ public class Decrypter {
             e.printStackTrace();
         }
 
-        int index = 0, idxC;
-        while (index < cipher.length){
-            idxC = index;
+        int idxC = 0;
+        while (idxC < cipher.length){
             for(int row = 0; row < 4; row++){
                 for(int col = 0; col < 4; col++){
                     cipherBlock[row][col] = cipher[idxC];
                     idxC++;
                 }
             }
-            index = idx;
             addRoundKey(cipherBlock, k3);
             shiftRows(cipherBlock);
             addRoundKey(cipherBlock, k2);
@@ -83,6 +81,18 @@ public class Decrypter {
     }
 
     private void shiftRows(byte[][] cipherBlock) {
+        int row = 1;
+        while (row < 4){
+            byte rightCell = cipherBlock[row][3];
+            for(int col = 2; col > 0; col--){
+                cipherBlock[row][col+1] = cipherBlock[row][col];
+            }
+            cipherBlock[row][0] = rightCell;
+            row++;
+        }
+    }
+
+/*    private void shiftRows(byte[][] cipherBlock) {
         for(int row = 1; row < 4; row++){
             shiftRight(cipherBlock, row);
         }
@@ -98,7 +108,7 @@ public class Decrypter {
             cipherBlock[row][0] = rightCell;
             counter++;
         }
-    }
+    }*/
 
     private void addRoundKey(byte[][] cipherBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){

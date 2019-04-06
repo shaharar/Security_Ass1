@@ -58,20 +58,14 @@ public class EncryptionBreaker {
     }
 
     private void shiftRows(byte[][] msgBlock) {
-        for(int row = 1; row < 4; row++){
-            shiftLeft(msgBlock, row);
-        }
-    }
-
-    private void shiftLeft(byte[][] msgBlock, int row) {
-        int counter = 0;
-        while (counter < row){
+        int row = 1;
+        while (row < 4){
             byte leftCell = msgBlock[row][0];
             for(int col = 1; col < 4; col++){
                 msgBlock[row][col-1] = msgBlock[row][col];
             }
             msgBlock[row][3] = leftCell;
-            counter++;
+            row++;
         }
     }
 

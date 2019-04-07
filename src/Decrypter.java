@@ -9,10 +9,12 @@ public class Decrypter {
 
     byte[] key, cipher;
     byte[][] cipherBlock, k1, k2, k3;
+    byte[] result;
 
     public Decrypter() {
         key = null;
         cipher = null;
+        result = null;
         cipherBlock = new byte[4][4];
         k1 = new byte[4][4];
         k2 = new byte[4][4];
@@ -32,7 +34,7 @@ public class Decrypter {
         int idx = 0;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                k1[row][col] = key[idx];
+                k1[col][row] = key[idx];
                 idx++;
             }
         }
@@ -41,7 +43,7 @@ public class Decrypter {
         idx = 16;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                k2[row][col] = key[idx];
+                k2[col][row] = key[idx];
                 idx++;
             }
         }
@@ -50,7 +52,7 @@ public class Decrypter {
         idx = 32;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                k3[row][col] = key[idx];
+                k3[col][row] = key[idx];
                 idx++;
             }
         }
@@ -62,11 +64,13 @@ public class Decrypter {
             e.printStackTrace();
         }
 
-        int idxC = 0;
+        result = new byte[cipher.length];
+
+        int idxC = 0, idxR = 0;
         while (idxC < cipher.length){
             for(int row = 0; row < 4; row++){
                 for(int col = 0; col < 4; col++){
-                    cipherBlock[row][col] = cipher[idxC];
+                    cipherBlock[col][row] = cipher[idxC];
                     idxC++;
                 }
             }
@@ -76,23 +80,18 @@ public class Decrypter {
             shiftRows(cipherBlock);
             addRoundKey(cipherBlock, k1);
             shiftRows(cipherBlock);
-            writeToFile(cipherBlock, path3);
+
+            for(int row = 0; row < 4; row++){
+                for(int col = 0; col < 4; col++){
+                    result[idxR] = cipherBlock[col][row];
+                    idxR++;
+                }
+            }
         }
+        writeToFile(result, path3);
     }
 
     private void shiftRows(byte[][] cipherBlock) {
-        int row = 1;
-        while (row < 4){
-            byte rightCell = cipherBlock[row][3];
-            for(int col = 2; col > 0; col--){
-                cipherBlock[row][col+1] = cipherBlock[row][col];
-            }
-            cipherBlock[row][0] = rightCell;
-            row++;
-        }
-    }
-
-/*    private void shiftRows(byte[][] cipherBlock) {
         for(int row = 1; row < 4; row++){
             shiftRight(cipherBlock, row);
         }
@@ -102,25 +101,24 @@ public class Decrypter {
         int counter = 0;
         while (counter < row){
             byte rightCell = cipherBlock[row][3];
-            for(int col = 2; col > 0; col--){
+            for(int col = 2; col >= 0; col--){
                 cipherBlock[row][col+1] = cipherBlock[row][col];
             }
             cipherBlock[row][0] = rightCell;
             counter++;
         }
-    }*/
+    }
 
     private void addRoundKey(byte[][] cipherBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-              //  int xorRes = ((int)cipherBlock[row][col])^((int)k[row][col]);
-                int xorRes = ((int)(cipherBlock[row][col] & 0xff))^((int)(k[row][col]& 0xff));
+                int xorRes = (cipherBlock[row][col] & 0xff)^(k[row][col]& 0xff);
                 cipherBlock[row][col] = (byte)xorRes;
             }
         }
     }
 
-    private void writeToFile(byte[][] cipherBlock, String path) throws IOException {
+    private void writeToFile(byte[] result, String path) throws IOException {
 
         FileOutputStream out = null;
         try {
@@ -128,9 +126,7 @@ public class Decrypter {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        for(int row = 0; row < 4; row++){
-            out.write(cipherBlock[row]);
-        }
+        out.write(result);
         out.close();
     }
 }

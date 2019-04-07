@@ -1,19 +1,20 @@
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Random;
+        import java.io.FileOutputStream;
+        import java.io.IOException;
+        import java.nio.file.Files;
+        import java.nio.file.Path;
+        import java.nio.file.Paths;
+        import java.util.Random;
 
 public class EncryptionBreaker {
 
-    byte[] cipher, message;
+    byte[] cipher, message, result;
     byte[][] msgBlock, cipherBlock, k1, k2;
 
     public EncryptionBreaker() {
         message = null;
         cipher = null;
+        result = new byte[48];
         msgBlock = new byte[4][4];
         cipherBlock = new byte[4][4];
         k1 = new byte[4][4];
@@ -42,8 +43,8 @@ public class EncryptionBreaker {
         int idxM = 0, idxC = 0;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                msgBlock[row][col] = message[idxM];
-                cipherBlock[row][col] = cipher[idxC];
+                msgBlock[col][row] = message[idxM];
+                cipherBlock[col][row] = cipher[idxC];
                 idxM++;
                 idxC++;
             }
@@ -54,32 +55,61 @@ public class EncryptionBreaker {
         addRoundKey(msgBlock, k2);
         shiftRows(msgBlock);
         addRoundKey(msgBlock, cipherBlock);
-        writeToFile(msgBlock, path3);
+
+        int idxR = 0;
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                result[idxR] = k1[col][row];
+                idxR++;
+            }
+        }
+
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                result[idxR] = k2[col][row];
+                idxR++;
+            }
+        }
+
+        for(int row = 0; row < 4; row++){
+            for(int col = 0; col < 4; col++){
+                result[idxR] = msgBlock[col][row];
+                idxR++;
+            }
+        }
+
+        writeToFile(result, path3);
     }
 
     private void shiftRows(byte[][] msgBlock) {
-        int row = 1;
-        while (row < 4){
+        for (int row = 1; row < 4; row++){
+            shiftLeft(msgBlock, row);
+        }
+
+    }
+
+    private void shiftLeft(byte[][] msgBlock, int row) {
+        int counter = 0;
+        while (counter < row){
             byte leftCell = msgBlock[row][0];
             for(int col = 1; col < 4; col++){
                 msgBlock[row][col-1] = msgBlock[row][col];
             }
             msgBlock[row][3] = leftCell;
-            row++;
+            counter++;
         }
     }
 
     private void addRoundKey(byte[][] msgBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-              //  int xorRes = ((int)msgBlock[row][col])^((int)k[row][col]);
-                int xorRes = ((int)(msgBlock[row][col] & 0xff))^((int)(k[row][col]& 0xff));
+                int xorRes = (msgBlock[row][col] & 0xff)^(k[row][col]& 0xff);
                 msgBlock[row][col] = (byte)xorRes;
             }
         }
     }
 
-    private void writeToFile(byte[][] msgBlock, String path) throws IOException {
+    private void writeToFile(byte[] result, String path) throws IOException {
 
         FileOutputStream out = null;
         try {
@@ -87,9 +117,7 @@ public class EncryptionBreaker {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        for(int row = 0; row < 4; row++){
-            out.write(msgBlock[row]);
-        }
+        out.write(result);
         out.close();
     }
 }

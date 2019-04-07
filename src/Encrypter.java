@@ -5,12 +5,13 @@ import java.nio.file.Paths;
 
 public class Encrypter {
 
-    byte[] key, message;
+    byte[] key, message, result;
     byte[][] msgBlock, k1, k2, k3;
 
     public Encrypter() {
         key = null;
         message = null;
+        result = null;
         msgBlock = new byte[4][4];
         k1 = new byte[4][4];
         k2 = new byte[4][4];
@@ -19,8 +20,7 @@ public class Encrypter {
 
     public void encrypt(String path1, String path2, String path3) throws IOException {
 
-        Path path_1 = Paths.get("C:\\Users\\User\\key_short");
-       // Path path_1 = Paths.get(path1);
+        Path path_1 = Paths.get(path1);
         try {
             key = Files.readAllBytes(path_1);
         } catch (IOException e) {
@@ -31,7 +31,7 @@ public class Encrypter {
         int idx = 0;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                k1[row][col] = key[idx];
+                k1[col][row] = key[idx];
                 idx++;
             }
         }
@@ -40,7 +40,7 @@ public class Encrypter {
         idx = 16;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                k2[row][col] = key[idx];
+                k2[col][row] = key[idx];
                 idx++;
             }
         }
@@ -49,25 +49,25 @@ public class Encrypter {
         idx = 32;
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                k3[row][col] = key[idx];
+                k3[col][row] = key[idx];
                 idx++;
             }
         }
 
-        Path path_2 = Paths.get("C:\\Users\\User\\message_short");
-        //Path path_2 = Paths.get(path2);
+        Path path_2 = Paths.get(path2);
         try {
             message = Files.readAllBytes(path_2);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        result = new byte[message.length];
 
-        int idxM = 0;
+        int idxM = 0, idxR = 0;
         while (idxM < message.length){
             for(int row = 0; row < 4; row++){
                 for(int col = 0; col < 4; col++){
-                    msgBlock[row][col] = message[idxM];
+                    msgBlock[col][row] = message[idxM];
                     idxM++;
                 }
             }
@@ -77,24 +77,17 @@ public class Encrypter {
             addRoundKey(msgBlock, k2);
             shiftRows(msgBlock);
             addRoundKey(msgBlock, k3);
-            writeToFile(msgBlock, "C:\\Users\\User\\cipher.txt");
-          //  writeToFile(msgBlock, path3);
+            for(int row = 0; row < 4; row++){
+                for(int col = 0; col < 4; col++){
+                    result[idxR] = msgBlock[col][row];
+                    idxR++;
+                }
+            }
         }
+        writeToFile(result, path3);
     }
 
     private void shiftRows(byte[][] msgBlock) {
-        int row = 1;
-        while (row < 4){
-            byte leftCell = msgBlock[row][0];
-            for(int col = 1; col < 4; col++){
-                msgBlock[row][col-1] = msgBlock[row][col];
-            }
-            msgBlock[row][3] = leftCell;
-            row++;
-        }
-    }
-
-/*    private void shiftRows(byte[][] msgBlock) {
         for(int row = 1; row < 4; row++){
             shiftLeft(msgBlock, row);
         }
@@ -110,18 +103,18 @@ public class Encrypter {
             msgBlock[row][3] = leftCell;
             counter++;
         }
-    }*/
+    }
 
     private void addRoundKey(byte[][] msgBlock, byte[][] k) {
         for(int row = 0; row < 4; row++){
             for(int col = 0; col < 4; col++){
-                int xorRes = ((int)(msgBlock[row][col] & 0xff))^((int)(k[row][col]& 0xff));
+                int xorRes = ((msgBlock[row][col] & 0xff))^((k[row][col]& 0xff));
                 msgBlock[row][col] = (byte)xorRes;
             }
         }
     }
 
-    private void writeToFile(byte[][] msgBlock, String path) throws IOException {
+    private void writeToFile(byte[] result, String path) throws IOException {
 
         FileOutputStream out = null;
         try {
@@ -129,9 +122,7 @@ public class Encrypter {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        for(int row = 0; row < 4; row++){
-            out.write(msgBlock[row]);
-        }
+        out.write(result);
         out.close();
     }
 }
